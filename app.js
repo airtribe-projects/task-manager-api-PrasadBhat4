@@ -20,7 +20,12 @@ let tasks = [
   },
 ];
 
-let nextId = Math.max(...tasks.map((t) => t.id)) + 1;
+let nextId;
+if (tasks.length === 0) {
+  nextId = 1;
+} else {
+  nextId = Math.max(...tasks.map((t) => t.id)) + 1;
+}
 
 // Input Validation Middleware
 function validateTaskInput(req, res, next) {
@@ -94,7 +99,7 @@ app.get("/tasks/priority/:level", (req, res) => {
   res.json(filtered);
 });
 
-// ✅ POST /tasks   
+// ✅ POST /tasks
 app.post("/tasks", validateTaskInput, (req, res) => {
   const { title, description, priority = "medium" } = req.body;
 
@@ -147,6 +152,11 @@ app.delete("/tasks/:id", (req, res) => {
 // ✅ Catch JSON parse errors
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
+    console.error("JSON Parse Error:", err.message);
+    console.error("Request body:", req.body);
+    console.error("Request URL:", req.originalUrl);
+    console.error("Request method:", req.method);
+
     return res.status(400).json({ message: "Invalid JSON payload." });
   }
   next();
